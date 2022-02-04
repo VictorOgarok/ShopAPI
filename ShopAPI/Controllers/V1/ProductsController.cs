@@ -7,6 +7,7 @@ using ShopAPI.Contracts.V1.Requests;
 using ShopAPI.Contracts.V1.Responses;
 using System.Linq;
 using ShopAPI.Services;
+using System.Threading.Tasks;
 
 namespace ShopAPI.Controllers.V1
 {
@@ -20,15 +21,15 @@ namespace ShopAPI.Controllers.V1
         }
 
         [HttpGet(ApiRoutes.Products.GetAll)]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            return Ok(productService.GetProducts());
+            return Ok(await productService.GetProductsAsync());
         }
 
         [HttpGet(ApiRoutes.Products.Get)]
-        public IActionResult Get([FromRoute] Guid id)
+        public async Task<IActionResult> Get([FromRoute] Guid id)
         {
-            var product = productService.GetProductById(id);
+            var product = await productService.GetProductByIdAsync(id);
 
             if (product == null)
             {
@@ -39,7 +40,7 @@ namespace ShopAPI.Controllers.V1
         }
 
         [HttpPut(ApiRoutes.Products.Update)]
-        public IActionResult Update([FromRoute] Guid id, [FromBody] UpdateProductRequest productRequest)
+        public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateProductRequest productRequest)
         {
             var product = new Product()
             {
@@ -47,7 +48,7 @@ namespace ShopAPI.Controllers.V1
                 Name = productRequest.Name
             };
 
-            var success = productService.UpdateProduct(product);
+            var success = await productService.UpdateProductAsync(product);
 
             if (success)
             {
@@ -58,26 +59,23 @@ namespace ShopAPI.Controllers.V1
         }
 
         [HttpPost(ApiRoutes.Products.Create)]
-        public IActionResult Create([FromBody] CreateProductRequest productRequest)
+        public async Task<IActionResult> Create([FromBody] CreateProductRequest productRequest)
         {
-            var product = new Product() { Id = productRequest.Id };
+            var product = new Product() { Name = productRequest.Name };
 
-            if (product.Id != Guid.Empty)
-                product.Id = Guid.NewGuid();
-
-            productService.GetProducts().Add(product);
+            await productService.CreateProductAsync(product);
 
             var url = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}/{ApiRoutes.Products.Get.Replace("{id}", product.Id.ToString())}";
 
-            var productResponse = new ProductResponse() { Id = product.Id };
+            var productResponse = new ProductResponse() { Id = product.Id, Name=product.Name };
 
             return Created(url, productResponse);
         }
 
         [HttpDelete(ApiRoutes.Products.Delete)]
-        public IActionResult Delete([FromRoute] Guid id)
+        public async Task<IActionResult> Delete([FromRoute] Guid id)
         {
-            var success = productService.DeleteProduct(id);
+            var success = await productService.DeleteProductAsync(id);
 
             if (success)
             {

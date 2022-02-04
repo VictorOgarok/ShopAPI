@@ -9,12 +9,14 @@ namespace ShopAPI.Services
 {
     public interface IProductService
     {
-        List<Product> GetProducts();
+        Task<List<Product>> GetProductsAsync();
 
-        Product GetProductById(Guid id);
+        Task<Product> GetProductByIdAsync(Guid id);
 
-        bool UpdateProduct(Product product);
+        Task<bool> UpdateProductAsync(Product product);
 
-        bool DeleteProduct(Guid id);
+        Task<bool> DeleteProductAsync(Guid id);
+
+        Task<bool> CreateProductAsync(Product product);
     }
 }

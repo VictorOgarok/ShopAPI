@@ -1,4 +1,6 @@
-﻿using ShopAPI.Domain;
+﻿using Microsoft.EntityFrameworkCore;
+using ShopAPI.Data;
+using ShopAPI.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,50 +11,45 @@ namespace ShopAPI.Services
 {
     public class ProductService : IProductService
     {
-        private List<Product> products;
+        private readonly DataContext dataContext;
 
-        public ProductService()
+        public ProductService(DataContext context)
         {
-            products = new List<Product>();
-            for (int i = 0; i < 5; i++)
-            {
-                products.Add(new Product() { Id = Guid.NewGuid(), Name = "Sample product" });
-            }
+            dataContext = context;
         }
 
-        public bool DeleteProduct(Guid id)
+        public async Task<bool> DeleteProductAsync(Guid id)
         {
-            var product = GetProductById(id);
+            var product = await GetProductByIdAsync(id);
+            if (product == null) return false;
+            dataContext.Products.Remove(product);
+            var count = await dataContext.SaveChangesAsync();
 
-            if (product != null)
-                return false;
-
-            products.Remove(product);
-            return true;
+            return count > 0;
         }
 
-        public Product GetProductById(Guid id)
+        public async Task<Product> GetProductByIdAsync(Guid id)
         {
-            return products.SingleOrDefault(i => i.Id == id);
+            return await dataContext.Products.SingleOrDefaultAsync(i => i.Id == id);
         }
 
-        public List<Product> GetProducts()
+        public async Task<List<Product>> GetProductsAsync()
         {
-            return products;
+            return await dataContext.Products.ToListAsync();
         }
 
-        public bool UpdateProduct(Product product)
+        public async Task<bool> UpdateProductAsync(Product product)
         {
-            if (GetProductById(product.Id)!= null)
-            {
-                var index = products.FindIndex(i => i.Id == product.Id);
-                products[index] = product;
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            dataContext.Products.Update(product);
+            var count = await dataContext.SaveChangesAsync();
+            return count > 0;
+        }
+
+        public async Task<bool> CreateProductAsync(Product product)
+        {
+            await dataContext.AddAsync(product);
+            var count = await dataContext.SaveChangesAsync();
+            return count > 0;
         }
     }
 }
