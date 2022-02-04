@@ -3,40 +3,56 @@ using System;
 using System.Collections.Generic;
 using ShopAPI.Contracts.V1;
 using ShopAPI.Domain;
+using ShopAPI.Contracts.V1.Requests;
+using ShopAPI.Contracts.V1.Responses;
+using System.Linq;
+using ShopAPI.Services;
 
 namespace ShopAPI.Controllers.V1
 {
     public class ProductsController : Controller
     {
-        private List<Product> _products;
+        private readonly IProductService productService;
 
-        public ProductsController()
+        public ProductsController(IProductService service)
         {
-            _products = new List<Product>();
-            for (int i = 0; i < 5; i++)
-            {
-                _products.Add(new Product() { Id = Guid.NewGuid().ToString() });
-            }
-
+            productService = service;
         }
 
         [HttpGet(ApiRoutes.Products.GetAll)]
         public IActionResult GetAll()
         {
-            return Ok(_products);
+            return Ok(productService.GetProducts());
+        }
+
+        [HttpGet(ApiRoutes.Products.Get)]
+        public IActionResult Get([FromRoute]Guid id)
+        {
+            var product = productService.GetProductById(id);
+
+            if (product==null)
+            {
+                return NotFound();
+            }
+
+            return Ok(product);
         }
 
         [HttpPost(ApiRoutes.Products.Create)]
-        public IActionResult Create([FromBody] Product product)
+        public IActionResult Create([FromBody] CreateProductRequest productRequest)
         {
-            if (string.IsNullOrWhiteSpace(product.Id))
-                product.Id = Guid.NewGuid().ToString();
+            var product = new Product() { Id = productRequest.Id};
 
-            _products.Add(product);
+            if (product.Id != Guid.Empty)
+                product.Id = Guid.NewGuid();
 
-            var url = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}/{ApiRoutes.Products.Get.Replace("{id}",product.Id)}";
+            productService.GetProducts().Add(product);
 
-            return Created(url, product);
+            var url = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}/{ApiRoutes.Products.Get.Replace("{id}",product.Id.ToString())}";
+
+            var productResponse = new ProductResponse() {Id=product.Id };
+
+            return Created(url, productResponse);
         }
     }
 }
