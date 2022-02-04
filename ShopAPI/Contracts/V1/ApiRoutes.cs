@@ -13,6 +13,8 @@
             public const string GetAll = Base + "/products";
             public const string Create = Base + "/products";
             public const string Get = Base + "/products/{id}";
+            public const string Update = Base + "/products/{id}";
+            public const string Delete = Base + "/products/{id}";
         }
     }
 }

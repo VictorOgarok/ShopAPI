@@ -20,6 +20,17 @@ namespace ShopAPI.Services
             }
         }
 
+        public bool DeleteProduct(Guid id)
+        {
+            var product = GetProductById(id);
+
+            if (product != null)
+                return false;
+
+            products.Remove(product);
+            return true;
+        }
+
         public Product GetProductById(Guid id)
         {
             return products.SingleOrDefault(i => i.Id == id);
@@ -28,6 +39,20 @@ namespace ShopAPI.Services
         public List<Product> GetProducts()
         {
             return products;
+        }
+
+        public bool UpdateProduct(Product product)
+        {
+            if (GetProductById(product.Id)!= null)
+            {
+                var index = products.FindIndex(i => i.Id == product.Id);
+                products[index] = product;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

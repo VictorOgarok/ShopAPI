@@ -26,33 +26,64 @@ namespace ShopAPI.Controllers.V1
         }
 
         [HttpGet(ApiRoutes.Products.Get)]
-        public IActionResult Get([FromRoute]Guid id)
+        public IActionResult Get([FromRoute] Guid id)
         {
             var product = productService.GetProductById(id);
 
-            if (product==null)
+            if (product == null)
             {
-                return NotFound();
+                return BadRequest();
             }
 
             return Ok(product);
         }
 
+        [HttpPut(ApiRoutes.Products.Update)]
+        public IActionResult Update([FromRoute] Guid id, [FromBody] UpdateProductRequest productRequest)
+        {
+            var product = new Product()
+            {
+                Id = id,
+                Name = productRequest.Name
+            };
+
+            var success = productService.UpdateProduct(product);
+
+            if (success)
+            {
+                return Ok(product);
+
+            }
+            return BadRequest();
+        }
+
         [HttpPost(ApiRoutes.Products.Create)]
         public IActionResult Create([FromBody] CreateProductRequest productRequest)
         {
-            var product = new Product() { Id = productRequest.Id};
+            var product = new Product() { Id = productRequest.Id };
 
             if (product.Id != Guid.Empty)
                 product.Id = Guid.NewGuid();
 
             productService.GetProducts().Add(product);
 
-            var url = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}/{ApiRoutes.Products.Get.Replace("{id}",product.Id.ToString())}";
+            var url = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.ToUriComponent()}/{ApiRoutes.Products.Get.Replace("{id}", product.Id.ToString())}";
 
-            var productResponse = new ProductResponse() {Id=product.Id };
+            var productResponse = new ProductResponse() { Id = product.Id };
 
             return Created(url, productResponse);
+        }
+
+        [HttpDelete(ApiRoutes.Products.Delete)]
+        public IActionResult Delete([FromRoute] Guid id)
+        {
+            var success = productService.DeleteProduct(id);
+
+            if (success)
+            {
+                return NoContent();
+            }
+            return BadRequest();
         }
     }
 }

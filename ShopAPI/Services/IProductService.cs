@@ -12,5 +12,9 @@ namespace ShopAPI.Services
         List<Product> GetProducts();
 
         Product GetProductById(Guid id);
+
+        bool UpdateProduct(Product product);
+
+        bool DeleteProduct(Guid id);
     }
 }
