@@ -21,9 +21,36 @@ namespace ShopAPI.Controllers.V1
         }
 
         [HttpPost(ApiRoutes.Auth.Register)]
-        public async Task<IActionResult> Register([FromBody]UserRegistrationRequest request)
+        public async Task<IActionResult> Register([FromBody] UserRegistrationRequest request)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new FailedAuthResponse
+                {
+                    ErrorMessages = ModelState.Values.SelectMany(i => i.Errors.Select(j => j.ErrorMessage))
+                });
+            }
+
             var response = await authService.RegisterAsync(request.Email, request.Password);
+
+            if (!response.Success)
+            {
+                return BadRequest(new FailedAuthResponse
+                {
+                    ErrorMessages = response.ErrorMessages
+                });
+            }
+
+            return Ok(new SuccessAuthResponse
+            {
+                Token = response.Token
+            });
+        }
+
+        [HttpPost(ApiRoutes.Auth.Login)]
+        public async Task<IActionResult> Login([FromBody] UserLoginRequest request)
+        {
+            var response = await authService.LoginAsync(request.Email, request.Password);
 
             if (!response.Success)
             {

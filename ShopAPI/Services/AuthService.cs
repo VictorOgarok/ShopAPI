@@ -23,6 +23,31 @@ namespace ShopAPI.Services
             jwtOptions = options;
         }
 
+        public async Task<AuthenticationResult> LoginAsync(string email, string password)
+        {
+            var user = await userManager.FindByEmailAsync(email);
+
+            if (user == null)
+            {
+                return new AuthenticationResult
+                {
+                    ErrorMessages = new[] { "Incorrect username or password" }
+                };
+            }
+
+            var passwordValid = await userManager.CheckPasswordAsync(user, password);
+
+            if (!passwordValid)
+            {
+                return new AuthenticationResult
+                {
+                    ErrorMessages = new[] { "Incorrect username or password" }
+                };
+            }
+
+            return GenerateAuthenticationResult(user);
+        }
+
         public async Task<AuthenticationResult> RegisterAsync(string email, string password)
         {
             var user = await userManager.FindByEmailAsync(email);
@@ -41,7 +66,7 @@ namespace ShopAPI.Services
                 UserName = email
             };
 
-            var newUser = await userManager.CreateAsync(user,password);
+            var newUser = await userManager.CreateAsync(user, password);
 
             if (!newUser.Succeeded)
             {
@@ -51,6 +76,11 @@ namespace ShopAPI.Services
                 };
             }
 
+            return GenerateAuthenticationResult(user);
+        }
+
+        private AuthenticationResult GenerateAuthenticationResult(IdentityUser user)
+        {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(jwtOptions.Secret);
             var tokenDescriptor = new SecurityTokenDescriptor
