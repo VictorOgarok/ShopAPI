@@ -16,5 +16,11 @@
             public const string Update = Base + "/products/{id}";
             public const string Delete = Base + "/products/{id}";
         }
+
+        public static class Auth
+        {
+            public const string Login = Base + "/auth/login";
+            public const string Register = Base + "/auth/register";
+        }
     }
 }

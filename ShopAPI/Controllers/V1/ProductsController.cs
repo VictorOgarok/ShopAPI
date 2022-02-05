@@ -8,9 +8,12 @@ using ShopAPI.Contracts.V1.Responses;
 using System.Linq;
 using ShopAPI.Services;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace ShopAPI.Controllers.V1
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ProductsController : Controller
     {
         private readonly IProductService productService;
@@ -27,13 +30,13 @@ namespace ShopAPI.Controllers.V1
         }
 
         [HttpGet(ApiRoutes.Products.Get)]
-        public async Task<IActionResult> Get([FromRoute] Guid id)
+        public async Task<IActionResult> Get([FromRoute] Guid id) 
         {
             var product = await productService.GetProductByIdAsync(id);
 
             if (product == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
             return Ok(product);
@@ -55,7 +58,7 @@ namespace ShopAPI.Controllers.V1
                 return Ok(product);
 
             }
-            return BadRequest();
+            return NotFound();
         }
 
         [HttpPost(ApiRoutes.Products.Create)]
@@ -81,7 +84,7 @@ namespace ShopAPI.Controllers.V1
             {
                 return NoContent();
             }
-            return BadRequest();
+            return NotFound();
         }
     }
 }
