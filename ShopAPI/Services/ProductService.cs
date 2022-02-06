@@ -51,5 +51,22 @@ namespace ShopAPI.Services
             var count = await dataContext.SaveChangesAsync();
             return count > 0;
         }
+
+        public async Task<bool> UserCreatedProductAsync(Guid postId, string userId)
+        {
+            var product = await dataContext.Products.AsNoTracking().SingleOrDefaultAsync(i=>i.Id == postId);
+
+            if (product == null)
+            {
+                return false;
+            }
+
+            if (product.CreatorId!=userId)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }

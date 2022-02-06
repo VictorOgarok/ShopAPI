@@ -18,5 +18,7 @@ namespace ShopAPI.Services
         Task<bool> DeleteProductAsync(Guid id);
 
         Task<bool> CreateProductAsync(Product product);
+
+        Task<bool> UserCreatedProductAsync(Guid postId, string userId);
     }
 }

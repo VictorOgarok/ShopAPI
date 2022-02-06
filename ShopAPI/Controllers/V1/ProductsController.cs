@@ -10,6 +10,7 @@ using ShopAPI.Services;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using ShopAPI.Extensions;
 
 namespace ShopAPI.Controllers.V1
 {
@@ -45,11 +46,16 @@ namespace ShopAPI.Controllers.V1
         [HttpPut(ApiRoutes.Products.Update)]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateProductRequest productRequest)
         {
-            var product = new Product()
+            var userCreatedProduct = await productService.UserCreatedProductAsync(id, HttpContext.GetUserByid());
+
+            if (!userCreatedProduct)
             {
-                Id = id,
-                Name = productRequest.Name
-            };
+                return BadRequest(new { error = "You didn't create this product" });
+            }
+
+            var product = await productService.GetProductByIdAsync(id);
+
+            product.Name = productRequest.Name;
 
             var success = await productService.UpdateProductAsync(product);
 
@@ -64,7 +70,11 @@ namespace ShopAPI.Controllers.V1
         [HttpPost(ApiRoutes.Products.Create)]
         public async Task<IActionResult> Create([FromBody] CreateProductRequest productRequest)
         {
-            var product = new Product() { Name = productRequest.Name };
+            var product = new Product()
+            {
+                Name = productRequest.Name,
+                CreatorId = HttpContext.GetUserByid()
+            };
 
             await productService.CreateProductAsync(product);
 

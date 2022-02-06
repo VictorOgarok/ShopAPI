@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity;
+using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ShopAPI.Domain
 {
@@ -7,6 +9,12 @@ namespace ShopAPI.Domain
     {
         [Key]
         public Guid Id { get; set; }
+
         public string Name { get; set; }
+
+        public string CreatorId { get; set; }
+
+        [ForeignKey(nameof(CreatorId))]
+        public IdentityUser CreatedBy { get; set; }
     }
 }
