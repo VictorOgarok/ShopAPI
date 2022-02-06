@@ -43,7 +43,8 @@ namespace ShopAPI.Controllers.V1
 
             return Ok(new SuccessAuthResponse
             {
-                Token = response.Token
+                Token = response.Token,
+                RefreshToken = response.RefreshToken
             });
         }
 
@@ -62,7 +63,28 @@ namespace ShopAPI.Controllers.V1
 
             return Ok(new SuccessAuthResponse
             {
-                Token = response.Token
+                Token = response.Token,
+                RefreshToken = response.RefreshToken
+            });
+        }
+
+        [HttpPost(ApiRoutes.Auth.Refresh)]
+        public async Task<IActionResult> Refresh([FromBody] RefreshRequest request)
+        {
+            var response = await authService.RefreshTokenAsync(request.Token, request.RefreshToken);
+
+            if (!response.Success)
+            {
+                return BadRequest(new FailedAuthResponse
+                {
+                    ErrorMessages = response.ErrorMessages
+                });
+            }
+
+            return Ok(new SuccessAuthResponse
+            {
+                Token = response.Token,
+                RefreshToken = response.RefreshToken
             });
         }
     }

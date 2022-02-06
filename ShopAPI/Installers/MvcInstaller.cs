@@ -21,6 +21,18 @@ namespace ShopAPI.Installers
             configuration.Bind(nameof(jwtOptions), jwtOptions);
             services.AddSingleton(jwtOptions);
 
+            var tokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtOptions.Secret)),
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                RequireExpirationTime = false,
+                ValidateLifetime = true
+            };
+
+            services.AddSingleton(tokenValidationParameters);
+
             services.AddAuthentication(i =>
             {
                 i.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -29,15 +41,7 @@ namespace ShopAPI.Installers
             }).AddJwtBearer(i =>
             {
                 i.SaveToken = true;
-                i.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtOptions.Secret)),
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    RequireExpirationTime = false,
-                    ValidateLifetime = true
-                };
+                i.TokenValidationParameters = tokenValidationParameters;
             });
 
             services.AddScoped<IAuthService, AuthService>();

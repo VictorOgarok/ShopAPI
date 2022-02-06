@@ -9,5 +9,6 @@ namespace ShopAPI.Contracts.V1.Responses
     public class SuccessAuthResponse
     {
         public string Token { get; set; }
+        public string RefreshToken { get; set; }
     }
 }
